@@ -9,4 +9,6 @@ Created on Thu Nov  7 13:38:06 2024
 """
 Agora sem
 """
+
 print("Hello World")
+# %%
