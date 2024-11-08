@@ -3,3 +3,6 @@ def calcular_precision():
 
 def calcular_varianza():
     print("calcular_varianza")
+    
+def hola():
+    print('hola')
