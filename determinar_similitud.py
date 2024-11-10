@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from skimage.metrics import structural_similarity as ssim 
+import seaborn as sns
 
 #%% Preset para gráficos
 # Visualizaciones
@@ -95,26 +96,37 @@ imgs9 = np.load('./archivos/numero_9.npy')[:,:,:,np.newaxis]
 
 #%% Comparamos todos los números entre sí y creamos un dataframe
 resultados_totales = {}
+numeros = np.arange(0,10,1 )
 
 for i in range(0, 10):
     x = globals().get(f'imgs{i}')
     if x is not None:
         resultados_totales[f'imgs{i}'] = obtener_valores_comparacion(x)
 
-df_resultados = pd.DataFrame(resultados_totales, index=[f'imgs{i}' for i in range(10)],
-                             columns=[f'imgs{j}' for j in range(10)])
+df_resultados = pd.DataFrame(resultados_totales, index=numeros,
+                             columns=numeros)
+#%%
+resultados_totales = {}
+numeros = np.arange(0,10,1) 
 
-numeros = np.arange(0,10,1 )
+for i in range(0, 10):
+    x = globals().get(f'imgs{i}')
+    resultados_totales[f'imgs{i}'] = obtener_valores_comparacion(x)
+
+df_resultados = pd.DataFrame(resultados_totales)
+
+df_resultados.columns = numeros
+
 
 #%%
-for i in range(10):
-    #y = globals().get(f'imgs{i}')
-    plt.plot(numeros, df_resultados[f'imgs{i}'])
 
-plt.xticks(np.arange(0,10, 1.0))
-plt.ylabel('Valor promedio de SSIM')
+sns.heatmap(df_resultados, annot=False, cmap="YlGnBu", cbar=True)
+plt.title('Valor promedio de SSIM entre dígitos')
 plt.xlabel('Dígitos')
-plt.title('Similitud entre 7 con demás dígitos')
+plt.ylabel('Dígitos')
+plt.tight_layout()
+plt.show()
 
+plt.savefig('similitud entre digitos.pdf')
 
 
