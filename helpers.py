@@ -39,25 +39,7 @@ class Imagenes:
         
         return imgs
     
-    def guardar_numer(self, numero: int):
+    def guardar_numero(self, numero: int):
         imgs = self.obtener_imagenes(numero)
         np.save("f/archivos/numero_{x}.npy")
     
-# def 
-
-#Selecciono y guardo las imágenes correspondientes a esos índices 
-def guardar_numero(x, indices, data_imgs, data_chrs):
-    # global lista_data, lista_chrs
-    lista_chrs = []
-    lista_data = []
-    for i in indices:
-        im = data_imgs[i, :, :, 0]
-        ch = data_chrs[i]
-        lista_data.append(im)
-        lista_chrs.append(ch)
-
-    imgset = np.array(lista_data)
-    img_chr = np.array(lista_chrs)
-    imgset, img_chr
-    np.save(f"./archivos/numero_{x}.npy", imgset)
-    np.save(f"./archivos/numero_{x}_chrs.npy", img_chr)
