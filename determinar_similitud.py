@@ -1,4 +1,11 @@
+#%%===========================================================================
+# Grupo 14: Nahuel Rabey y Sammy Vallejo 
+#Este código sirve para el análisis exploratorio del dataset, se utiliza el método ssim para determinar 
+#similitud tanto entre las imágenes que corresponden a un único dígito como con las imágenes que corresponden  
+#a los distintos dígitos. 
+#=============================================================================
 
+#%%
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -19,15 +26,9 @@ plt.rcParams['font.family'] = 'STIXGeneral'
 
 #%% Cargar datos crudos
 
-# un array para las imágenes, otro para las etiquetas (por qué no lo ponen en el mismo array #$%@*)
+# un array para las imágenes, otro para las etiquetas
 data_imgs = np.load('./archivos/mnistc_images.npy')
 data_chrs = np.load('./archivos/mnistc_labels.npy')[:,np.newaxis]
-
-# mostrar forma del array:
-# 1ra dimensión: cada una de las imágenes en el dataset
-# 2da y 3ra dimensión: 28x28 píxeles de cada imagen
-print(data_imgs.shape)
-print(data_chrs.shape)
 
 
 #%% Función para guardar un archivo que contenga imágenes de un único número
@@ -36,7 +37,7 @@ indices = []
 lista_data = []
 lista_chrs = []
 
-#Busco los índices que corresponden las imáganes 
+#Busco los índices que corresponden las imágenes de un dígito en particular 
 def separar_numero(x):
     global indices
     indices = [i for i, numero in enumerate(data_chrs) if numero == x]
@@ -55,7 +56,8 @@ def guardar_numero(x):
     imgset, img_chr
     np.save(f"./archivos/numero_{x}.npy", imgset)
     np.save(f"./archivos/numero_{x}_chrs.npy", img_chr)
-    
+
+
 separar_numero(9)
 guardar_numero(9)
 
