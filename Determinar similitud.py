@@ -105,8 +105,9 @@ df_resultados = pd.DataFrame(resultados_totales, index=[f'imgs{i}' for i in rang
 numeros = np.arange(0,10,1 )
 
 #%%
-
-plt.plot(numeros, df_resultados[f'imgs{i}'])
+for i in range(10):
+    #y = globals().get(f'imgs{i}')
+    plt.plot(numeros, df_resultados[f'imgs{i}'])
 
 plt.xticks(np.arange(0,10, 1.0))
 plt.ylabel('Valor promedio de SSIM')
