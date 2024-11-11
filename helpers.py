@@ -6,6 +6,21 @@ class Imagenes:
     def __init__(self):
         self.data_imgs: np.ndarray = np.load('./archivos/mnistc_images.npy')
         self.data_chrs: np.ndarray = np.load('./archivos/mnistc_labels.npy')[:,np.newaxis]
+
+        # Crear Dataframe
+        columnas = crear_nombre_atributos()
+        
+        largo = len(self.data_imgs)
+        matriz_imagenes = np.zeros((largo, 28*28))
+        for i in range(largo):
+            matriz_imagenes[i] = transformar_imagen_en_arreglo(self.data_imgs[i])
+
+        df = pd.DataFrame(matriz_imagenes, columns=columnas)
+        df["number"] = self.data_chrs
+
+        self.df = df
+        self.atributos = df.drop(["number"], axis=1)
+        self.clases = df["number"]
     
     def buscar_indices(self, numero: int):
         """ 
