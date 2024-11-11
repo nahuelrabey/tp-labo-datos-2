@@ -1,3 +1,4 @@
 env
 archivos
 *.csv
+__pycache__
