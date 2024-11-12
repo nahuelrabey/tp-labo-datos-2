@@ -1,26 +1,33 @@
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+
+FOLDER = "./archivos/"
+DATAFRAME_DIR = FOLDER + "mnistic_dataframe.pkl"
+
+X_DEV_DIR = FOLDER + "X_DEV.pkl"
+Y_DEV_DIR = FOLDER + "Y_DEV.pkl"
+
+X_HELDOUT_DIR = FOLDER + "X_HELDOUT.pkl"
+Y_HELDOUT_DIR = FOLDER + "Y_HELDOUT.pkl"
 
 class Imagenes:
     def __init__(self):
         self.data_imgs: np.ndarray = np.load('./archivos/mnistc_images.npy')
         self.data_chrs: np.ndarray = np.load('./archivos/mnistc_labels.npy')[:,np.newaxis]
 
+        comprobar_dataframe()
+
         # Crear Dataframe
-        columnas = crear_nombre_atributos()
-        
-        largo = len(self.data_imgs)
-        matriz_imagenes = np.zeros((largo, 28*28))
-        for i in range(largo):
-            matriz_imagenes[i] = transformar_imagen_en_arreglo(self.data_imgs[i])
-
-        df = pd.DataFrame(matriz_imagenes, columns=columnas)
-        df["number"] = self.data_chrs
-
-        self.df = df
-        self.atributos = df.drop(["number"], axis=1)
-        self.clases = df["number"]
+        self.df = pd.read_pickle(DATAFRAME_DIR)
+        self.atributos = self.df.drop(["number"], axis=1)
+        self.clases = self.df["number"]
+        self.x_dev = pd.read_pickle(X_DEV_DIR)
+        self.y_dev = pd.read_pickle(Y_DEV_DIR)
+        self.x_heldout = pd.read_pickle(X_HELDOUT_DIR)
+        self.y_heldout = pd.read_pickle(Y_HELDOUT_DIR)
     
     def buscar_indices(self, numero: int):
         """ 
@@ -72,8 +79,11 @@ class Imagenes:
             plt.axis('off')  
             plt.show()
     
-    
-    
+
+# ---------------------------------------------------------------------------- #
+#                             TRANSFORMAR IMAGENES                             #
+# ---------------------------------------------------------------------------- #c
+ 
 PIXELES_POR_FILA = 28
 CANTIDAD_ATRIBUTOS = PIXELES_POR_FILA*PIXELES_POR_FILA
 
@@ -122,3 +132,56 @@ def crear_nombre_atributos():
         nombres.append(f"({fila},{columna})")
     return nombres
 
+# ---------------------------------------------------------------------------- #
+#                               GUARDAR DATASETS                               #
+# ---------------------------------------------------------------------------- #
+
+
+def crear_dataframe():
+    data_imgs: np.ndarray = np.load('./archivos/mnistc_images.npy')
+    data_chrs: np.ndarray = np.load('./archivos/mnistc_labels.npy')[:,np.newaxis]
+
+    # Crear Dataframe
+    columnas = crear_nombre_atributos()
+    
+    largo = len(data_imgs)
+    matriz_imagenes = np.zeros((largo, 28*28))
+    for i in range(largo):
+        matriz_imagenes[i] = transformar_imagen_en_arreglo(data_imgs[i])
+
+    df = pd.DataFrame(matriz_imagenes, columns=columnas)
+    df["number"] = data_chrs
+
+    df.to_pickle(DATAFRAME_DIR)
+
+    x = df.drop(["number"], axis=1)
+    y = df["number"]
+
+    TRAIN = train_test_split(x,y, random_state=1, test_size=0.1)
+    x_dev:pd.DataFrame =    TRAIN[0]
+    x_eval:pd.DataFrame =   TRAIN[1]
+    y_dev:pd.DataFrame =    TRAIN[2]
+    y_eval:pd.DataFrame =   TRAIN[3]
+
+    x_dev.to_pickle(X_DEV_DIR)
+    y_dev.to_pickle(Y_DEV_DIR)
+
+    x_eval.to_pickle(X_HELDOUT_DIR)
+    y_eval.to_pickle(Y_HELDOUT_DIR)
+
+def comprobar_dataframe():
+    df = os.path.exists(DATAFRAME_DIR)
+    x_dev = os.path.exists(X_DEV_DIR)
+    y_dev = os.path.exists(Y_DEV_DIR)
+    
+    x_heldout = os.path.exists(X_HELDOUT_DIR)
+    y_heldout = os.path.exists(Y_HELDOUT_DIR)
+
+    if df and x_dev and y_dev and x_heldout and y_heldout:
+        return
+    else:
+        crear_dataframe()
+
+# if __name__ == "__main__":
+#     crear_dataframe()
+    
