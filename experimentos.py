@@ -23,6 +23,7 @@ plt.rcParams['font.family'] = 'STIXGeneral'
 #%%
 
 digitos_especificos = [0,2,4,6,7]
+criterio = 'gini'
 
 def crear_path(n: int):
     res = FOLDER + f"exp_{n}_res.npy"    
@@ -49,7 +50,7 @@ def experimento_1(X, y):
         kf_y_test = y.iloc[test_index]
 
         for j, altura_max in enumerate(alturas):
-            arbol = tree.DecisionTreeClassifier(max_depth = altura_max) 
+            arbol = tree.DecisionTreeClassifier(max_depth = altura_max, criterion= criterio) 
             arbol.fit(kf_x_train, kf_y_train)
             pred = arbol.predict(kf_x_test)
             exactitud = accuracy_score(kf_y_test, pred)
@@ -79,4 +80,4 @@ plt.ylabel("Exactitud promedio")
 plt.title("Exactitud vs Profundidad del Árbol de Decisión")
 plt.grid(True)
 plt.show()    
-plt.savefig('precision vs profundidad.pdf')
+plt.savefig('precision vs profundidad_entropia.pdf')
