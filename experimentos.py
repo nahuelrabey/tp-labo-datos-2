@@ -3,14 +3,33 @@ import numpy as np
 from sklearn import tree
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold, train_test_split
-
+import matplotlib.pyplot as plt
+#%%
 FOLDER = "./archivos/"
+
+#%%
+#%% Preset para gráficos
+# Visualizaciones
+plt.rcParams["figure.figsize"] = (10,8)
+plt.rcParams['font.size'] = 20           
+plt.rcParams['axes.labelsize'] = 20      
+plt.rcParams['axes.titlesize'] = 20      
+plt.rcParams['legend.fontsize'] = 16    
+plt.rcParams['xtick.labelsize'] = 16      
+plt.rcParams['ytick.labelsize'] = 16 
+plt.rcParams['mathtext.fontset'] = 'cm'
+plt.rcParams['font.family'] = 'STIXGeneral'
+
+#%%
+
+digitos_especificos = [0,2,4,6,7]
 
 def crear_path(n: int):
     res = FOLDER + f"exp_{n}_res.npy"    
     labels = FOLDER + f"exp_{n}_label.npy"
+    return res, labels
 
-def cargar_experrimento(n: int): 
+def cargar_experimento(n: int): 
     res, labels = crear_path(n)
     return np.load(res), np.load(labels)
 
@@ -43,8 +62,21 @@ def experimento_1(X, y):
 
 if __name__ == "__main__":
     imagenes = hlps.Imagenes()
-    x = imagenes.atributos
-    y = imagenes.clases
-    x_dev, x_eval, y_dev, y_eval = train_test_split(x,y, random_state=1, test_size=0.1)
+    mask = imagenes.clases.isin(digitos_especificos)  # Filtramos las imágenes para obtener solo de los dígitos específicos
+    x = imagenes.atributos[mask]
+    y = imagenes.clases[mask]
+    x_dev, x_eval, y_dev, y_eval = train_test_split(x, y, random_state=1, test_size=0.1)
 
     experimento_1(x_dev, y_dev)
+    
+#%% Graficamos la precisión promedio en función de la profundidad del árbol
+res, labels = cargar_experimento(1)
+exactitud_promedio = res.mean(axis=0)
+
+plt.plot(labels, exactitud_promedio, marker='o', linestyle='-')
+plt.xlabel("Profundidad del árbol de decisión")
+plt.ylabel("Exactitud promedio")
+plt.title("Exactitud vs Profundidad del Árbol de Decisión")
+plt.grid(True)
+plt.show()    
+plt.savefig('precision vs profundidad.pdf')
