@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
 #%%    
     
 PIXELES_POR_FILA = 28
@@ -51,75 +52,58 @@ def crear_nombre_atributos():
         nombres.append(f"({fila},{columna})")
     return nombres
 
-#%%
 
+#%%
 class Imagenes:
     def __init__(self):
-        self.data_imgs: np.ndarray = np.load('./archivos/mnistc_images.npy')
-        self.data_chrs: np.ndarray = np.load('./archivos/mnistc_labels.npy')[:,np.newaxis]
-
-        # Crear Dataframe
-        columnas = crear_nombre_atributos()
-        
-        largo = len(self.data_imgs)
-        matriz_imagenes = np.zeros((largo, 28*28))
-        for i in range(largo):
-            matriz_imagenes[i] = transformar_imagen_en_arreglo(self.data_imgs[i])
-
-        df = pd.DataFrame(matriz_imagenes, columns=columnas)
-        df["number"] = self.data_chrs
-
-        self.df = df
-        self.atributos = df.drop(["number"], axis=1)
-        self.clases = df["number"]
+            self.data_imgs: np.ndarray = np.load('./archivos/mnistc_images.npy')
+            self.data_chrs: np.ndarray = np.load('./archivos/mnistc_labels.npy')[:,np.newaxis]
     
+            # Crear Dataframe
+            columnas = crear_nombre_atributos()
+            
+            largo = len(self.data_imgs)
+            matriz_imagenes = np.zeros((largo, 28*28))
+            for i in range(largo):
+                matriz_imagenes[i] = transformar_imagen_en_arreglo(self.data_imgs[i])
+    
+            df = pd.DataFrame(matriz_imagenes, columns=columnas)
+            df["number"] = self.data_chrs
+    
+            self.df = df
+            self.atributos = df.drop(["number"], axis=1)
+            self.clases = df["number"]
+        
     def buscar_indices(self, numero: int):
-        """ 
-        Busco los índices que corresponden las imáganes 
-
-        A partir de un número de entrada entero me devuelve una lista con las posiciones dónde hay imágenes que corresponden a ese número
-        """
-        indices = [i for i, num in enumerate(self.data_chrs) if num == numero]
-        return indices
-
+            """ 
+            Busco los índices que corresponden las imáganes 
+    
+            A partir de un número de entrada entero me devuelve una lista con las posiciones dónde hay imágenes que corresponden a ese número
+            """
+            indices = [i for i, num in enumerate(self.data_chrs) if num == numero]
+            return indices
+    
     def obtener_imagenes(self, numero: int):
-        """_summary_
-
-        Args:
-            numero (int): el número que repreentan las imágenes 
-
-        Returns:
-            numpy.ndarray: un arreglo con las imagenes que representan a 'numero'
-        """
-        indices = self.buscar_indices(numero)
-
-        # obtengo la forma del arreglo de imágenes
-        imgs_shape = self.data_imgs.shape
-        # me interesa guardar la 2da,3ra,4ta dimensión, pero no la 1ra
-        # la 1ra dimensión (cantidad de imágenes) será la cantidad de índices que tenga
-        new_shape = (len(indices),)+imgs_shape[1:]
-
-        # este será el array donde guarde las nuevas imágenes
-        imgs = np.zeros(shape=new_shape, dtype=np.uint8)
-        for i in range(0,len(indices)):
-            index = indices[i]
-            imgs[i] = self.data_imgs[index].astype(np.uint8)  
-        
-        return imgs
+            """_summary_
     
-    def guardar_numero(self, numero: int):
-        imgs = self.obtener_imagenes(numero)
-        np.save("f/archivos/numero_{x}.npy", imgs)
+            Args:
+                numero (int): el número que repreentan las imágenes 
     
-    def plotear_primeros(self, n: int):
-        for i in range(5):
-            img_raw = self.atributos.iloc[i].to_numpy()
-            imagen = transformar_arreglo_en_imagen(img_raw)
-            label = self.clases.iloc[i]
-
-            plt.figure(figsize=(10,8))
-            plt.imshow(imagen, cmap='gray')
-            plt.title('caracter: ' + str(label))
-            plt.axis('off')  
-            plt.show()
+            Returns:
+                numpy.ndarray: un arreglo con las imagenes que representan a 'numero'
+            """
+            indices = self.buscar_indices(numero)
     
+            # obtengo la forma del arreglo de imágenes
+            imgs_shape = self.data_imgs.shape
+            # me interesa guardar la 2da,3ra,4ta dimensión, pero no la 1ra
+            # la 1ra dimensión (cantidad de imágenes) será la cantidad de índices que tenga
+            new_shape = (len(indices),)+imgs_shape[1:]
+    
+            # este será el array donde guarde las nuevas imágenes
+            imgs = np.zeros(shape=new_shape, dtype=np.uint8)
+            for i in range(0,len(indices)):
+                index = indices[i]
+                imgs[i] = self.data_imgs[index].astype(np.uint8)  
+            
+            return imgs

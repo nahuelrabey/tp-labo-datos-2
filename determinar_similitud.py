@@ -26,7 +26,12 @@ plt.rcParams['mathtext.fontset'] = 'cm'
 plt.rcParams['font.family'] = 'STIXGeneral'
 
 #%%
+
+#%%
 imagenes = hlps.Imagenes()
+
+
+img5 = imagenes.obtener_imagenes(5)
 
 #%%
 imgs_list = []
@@ -75,4 +80,55 @@ plt.show()
 
 plt.savefig('similitud entre digitos.pdf')
 
+#%%
+promedios_por_digito = []
 
+# Obtener imágenes y calcular el promedio para cada dígito
+for i in range(10):  
+    promedio_digito = np.mean(imgs_list[i], axis=0)  # Calcular el promedio en el eje de la cantidad de imágenes
+    promedios_por_digito.append(promedio_digito)  # Guardar el promedio
+
+
+# Visualizar los promedios en una cuadrícula
+fig, axes = plt.subplots(2, 5, figsize=(10, 5))
+fig.suptitle("Imagen promedio de cada dígito")
+
+for i, promedio in enumerate(promedios_por_digito):
+    ax = axes[i // 5, i % 5]
+    ax.imshow(promedio, cmap='gray')  # Mostrar el promedio como imagen
+    ax.set_title(f"Dígito {i}")
+    ax.axis('off')
+
+plt.show()
+
+#%%
+variances_por_digito = []
+atributos_significativos = []
+umbral_varianza = 10  # Ajusta este valor según el nivel de significancia deseado
+
+# Calcular el promedio y la varianza para cada dígito
+for i in range(10):
+    # Calcular promedio y varianza en el eje de la cantidad de imágenes
+    varianza_digito = np.var(imgs_list[i], axis=0)
+    
+    # Crear la máscara de atributos significativos basada en el umbral
+    mask_significativa = varianza_digito > umbral_varianza
+    
+    # Guardar el promedio y la máscara
+    variances_por_digito.append(varianza_digito)
+    atributos_significativos.append(mask_significativa)
+
+# Visualizar las imágenes promedio filtradas
+fig, axes = plt.subplots(2, 5, figsize=(10, 5))
+fig.suptitle("Imagen promedio de cada dígito (filtrando atributos significativos)")
+
+for i, promedio in enumerate(promedios_por_digito):
+    # Aplicar la máscara de atributos significativos al promedio del dígito
+    promedio_filtrado = np.where(atributos_significativos[i], promedio, np.nan)  # Coloca NaN en píxeles no significativos
+    
+    ax = axes[i // 5, i % 5]
+    im = ax.imshow(promedio_filtrado, cmap='gray')  # Mostrar el promedio filtrado como imagen
+    ax.set_title(f"Dígito {i}")
+    ax.axis('off')
+
+plt.show()
