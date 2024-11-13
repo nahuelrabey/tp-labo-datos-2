@@ -1,0 +1,9 @@
+Nahuel:
+
+Hasta ahora se armaron los experimientos del modelo de tree. Para el puntaje
+sólo se utiliza la exactitud (accuracy_score).
+
+Habría que guardar los modelos en un archivo, así cómo separar los conjuntos de
+desarrollo y testeo en otros archivos. Me gustaría saber alguna técnica para
+almacenar esto en github, así que haré un fork para probar esto en particular
+durante el día de mañana.
