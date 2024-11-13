@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 #%%
 FOLDER = "./archivos/"
 
-#%%
 #%% Preset para gráficos
 # Visualizaciones
 plt.rcParams["figure.figsize"] = (10,8)
