@@ -4,15 +4,34 @@ import numpy as np
 from sklearn import tree
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold, train_test_split
-
+import matplotlib.pyplot as plt
+#%%
 FOLDER = "./archivos/"
 
-def crear_path(name: str):
-    res = FOLDER + f"exp_{name}_res.npy"    
-    labels = FOLDER + f"exp_{name}_label.npy"
+#%%
+#%% Preset para gráficos
+# Visualizaciones
+plt.rcParams["figure.figsize"] = (10,8)
+plt.rcParams['font.size'] = 20           
+plt.rcParams['axes.labelsize'] = 20      
+plt.rcParams['axes.titlesize'] = 20      
+plt.rcParams['legend.fontsize'] = 16    
+plt.rcParams['xtick.labelsize'] = 16      
+plt.rcParams['ytick.labelsize'] = 16 
+plt.rcParams['mathtext.fontset'] = 'cm'
+plt.rcParams['font.family'] = 'STIXGeneral'
+
+#%%
+
+digitos_especificos = [0,2,4,6,7]
+criterio = 'gini'
+
+def crear_path(n: int):
+    res = FOLDER + f"exp_{n}_res.npy"    
+    labels = FOLDER + f"exp_{n}_label.npy"
     return res, labels
 
-def cargar_resultados(n: int): 
+def cargar_experimento(n: int): 
     res, labels = crear_path(n)
     return np.load(res), np.load(labels)
 
@@ -36,7 +55,7 @@ def experimento_decision_tree():
         kf_y_test = y.iloc[test_index]
 
         for j, altura_max in enumerate(alturas):
-            arbol = tree.DecisionTreeClassifier(max_depth = altura_max, random_state=1) 
+            arbol = tree.DecisionTreeClassifier(max_depth = altura_max, criterion= criterio) 
             arbol.fit(kf_x_train, kf_y_train)
             pred = arbol.predict(kf_x_test)
             exactitud = accuracy_score(kf_y_test, pred)
@@ -46,37 +65,15 @@ def experimento_decision_tree():
     np.save(res, resultados)
     np.save(labels, alturas)
 
-def experimento_random_forest():
-    imagenes = hlps.Imagenes()
-    X = imagenes.x_dev
-    y = imagenes.y_dev
-
-    alturas = [1,2,3,5,10,20]
-    nsplits = 5
-    kf = KFold(n_splits=nsplits)
-    resultados = np.zeros((nsplits, len(alturas)))
-
-    split = kf.split(X)
-    # print(len(split))
-    for i, (train_index, test_index) in enumerate(split):
-        kf_x_train = X.iloc[train_index]
-        kf_x_test = X.iloc[test_index]
-        
-        kf_y_train = y.iloc[train_index]
-        kf_y_test = y.iloc[test_index]
-
-        for j, altura_max in enumerate(alturas):
-            clf = RandomForestClassifier(random_state=1, max_depth=altura_max)
-            clf.fit(kf_x_train, kf_y_train)
-            pred = clf.predict(kf_x_test)
-            exactitud = accuracy_score(kf_y_test, pred)
-            resultados[i,j] = exactitud
-
-    res,labels = crear_path("random_forest")
-    np.save(res, resultados)
-    np.save(labels, alturas)
     
-if __name__ == "__main__":
+#%% Graficamos la precisión promedio en función de la profundidad del árbol
+res, labels = cargar_experimento("decision_tree")
+exactitud_promedio = res.mean(axis=0)
 
-    experimento_decision_tree()
-    experimento_random_forest()
+plt.plot(labels, exactitud_promedio, marker='o', linestyle='-')
+plt.xlabel("Profundidad del árbol de decisión")
+plt.ylabel("Exactitud promedio")
+plt.title("Exactitud vs Profundidad del Árbol de Decisión")
+plt.grid(True)
+plt.show()    
+plt.savefig('precision vs profundidad_entropia.pdf')
