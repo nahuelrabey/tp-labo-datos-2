@@ -25,13 +25,9 @@ plt.rcParams['ytick.labelsize'] = 16
 plt.rcParams['mathtext.fontset'] = 'cm'
 plt.rcParams['font.family'] = 'STIXGeneral'
 
-#%%
 
 #%%
 imagenes = hlps.Imagenes()
-
-
-img5 = imagenes.obtener_imagenes(5)
 
 #%%
 imgs_list = []
@@ -78,57 +74,82 @@ plt.ylabel('Dígitos')
 plt.tight_layout()
 plt.show()
 
-plt.savefig('similitud entre digitos.pdf')
+plt.savefig('./imagenes/similitud entre digitos.pdf')
 
 #%%
 promedios_por_digito = []
 
-# Obtener imágenes y calcular el promedio para cada dígito
+# Calculamos el promedio de cada imagen que corresponde a un único dígito
 for i in range(10):  
-    promedio_digito = np.mean(imgs_list[i], axis=0)  # Calcular el promedio en el eje de la cantidad de imágenes
-    promedios_por_digito.append(promedio_digito)  # Guardar el promedio
+    promedio_digito = np.mean(imgs_list[i], axis=0)
+    promedios_por_digito.append(promedio_digito)  
 
 
-# Visualizar los promedios en una cuadrícula
+# Fraficamos las imágenes promediadas
 fig, axes = plt.subplots(2, 5, figsize=(10, 5))
 fig.suptitle("Imagen promedio de cada dígito")
 
 for i, promedio in enumerate(promedios_por_digito):
     ax = axes[i // 5, i % 5]
-    ax.imshow(promedio, cmap='gray')  # Mostrar el promedio como imagen
+    ax.imshow(promedio, cmap='gray')
     ax.set_title(f"Dígito {i}")
     ax.axis('off')
 
+plt.tight_layout()
 plt.show()
+plt.savefig('./imagenes/imagen_promedio.pdf')
 
 #%%
-variances_por_digito = []
+varianza_por_digito = []
 atributos_significativos = []
-umbral_varianza = 10  # Ajusta este valor según el nivel de significancia deseado
+umbral_varianza = 2500 # Valor que se determina manualmente
 
-# Calcular el promedio y la varianza para cada dígito
+# Calculamos la varianza para cada dígito
 for i in range(10):
-    # Calcular promedio y varianza en el eje de la cantidad de imágenes
     varianza_digito = np.var(imgs_list[i], axis=0)
     
-    # Crear la máscara de atributos significativos basada en el umbral
+    # Creamos una máscara de atributos significativos basada en el umbral
     mask_significativa = varianza_digito > umbral_varianza
     
-    # Guardar el promedio y la máscara
-    variances_por_digito.append(varianza_digito)
+    varianza_por_digito.append(varianza_digito)
     atributos_significativos.append(mask_significativa)
 
-# Visualizar las imágenes promedio filtradas
+# Visualizamos las imágenes promedio filtradas
 fig, axes = plt.subplots(2, 5, figsize=(10, 5))
-fig.suptitle("Imagen promedio de cada dígito (filtrando atributos significativos)")
+fig.suptitle("Imagen promedio filtrada de cada dígito (Umbral 2500)")
 
 for i, promedio in enumerate(promedios_por_digito):
-    # Aplicar la máscara de atributos significativos al promedio del dígito
+    # Aplicamos la máscara de atributos significativos al promedio del dígito
     promedio_filtrado = np.where(atributos_significativos[i], promedio, np.nan)  # Coloca NaN en píxeles no significativos
     
     ax = axes[i // 5, i % 5]
-    im = ax.imshow(promedio_filtrado, cmap='gray')  # Mostrar el promedio filtrado como imagen
+    im = ax.imshow(promedio_filtrado, cmap='gray')
     ax.set_title(f"Dígito {i}")
     ax.axis('off')
 
+plt.tight_layout()
 plt.show()
+plt.savefig('./imagenes/imagen_promedio_filtrada_u25k.pdf')
+
+#%%
+digitos = [0,2,4,6,7]
+varianza_por_digito = []
+atributos_significativos = []
+umbral_varianza = 200 # Valor que se determina manualmente
+
+# Calculamos la varianza para cada dígito
+for i in digitos:
+    varianza_digito = np.var(imgs_list[i], axis=0)
+    
+    # Creamos una máscara de atributos significativos basada en el umbral
+    mask_significativa = varianza_digito > umbral_varianza
+    
+    varianza_por_digito.append(varianza_digito)
+    atributos_significativos.append(mask_significativa)
+
+imgs_filtradas_list = []
+for idx, i in enumerate(digitos):
+    imgs_filtradas = np.where(atributos_significativos[idx], imgs_list[i], np.nan)
+    imgs_filtradas_list.append(imgs_filtradas)
+    
+plt.imshow(imgs_filtradas_list[3][400], cmap='gray')

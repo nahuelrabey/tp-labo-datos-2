@@ -3,6 +3,7 @@
 import helpers as hlps
 import numpy as np
 from sklearn import tree
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
@@ -10,7 +11,6 @@ import matplotlib.pyplot as plt
 #%%
 FOLDER = "./archivos/"
 
-#%%
 #%% Preset para gráficos
 # Visualizaciones
 plt.rcParams["figure.figsize"] = (10,8)
@@ -29,21 +29,20 @@ def crear_path(n: str):
     res = FOLDER + f"exp_{n}_res.npy"    
     labels = FOLDER + f"exp_{n}_label.npy"
     return res, labels
-
-def cargar_experimento(nombre:str): 
-    res, labels = crear_path(nombre)
-    return np.load(res), np.load(labels, allow_pickle=True)
+    
+def cargar_resultados(n: int): 
+    res, labels = crear_path(n)
+    return np.load(res), np.load(labels)
 
 def experimento_max_depth(criterion: str):
     imagenes = hlps.Imagenes()
     X = imagenes.x_dev
     y = imagenes.y_dev
-
+    
     alturas = [1,2,3,5,10,20]
     nsplits = 5
     kf = KFold(n_splits=nsplits)
     resultados = np.zeros((nsplits, len(alturas)))
-
     split = kf.split(X)
     # print(len(split))
     for i, (train_index, test_index) in enumerate(split):
@@ -52,7 +51,7 @@ def experimento_max_depth(criterion: str):
         
         kf_y_train = y.iloc[train_index]
         kf_y_test = y.iloc[test_index]
-
+        
         for j, altura_max in enumerate(alturas):
             arbol = tree.DecisionTreeClassifier(max_depth = altura_max, criterion=criterion) 
             arbol.fit(kf_x_train, kf_y_train)
@@ -65,7 +64,7 @@ def experimento_max_depth(criterion: str):
     np.save(labels, alturas)
     
 def cargar_experimento_max_depth(criterion:str):
-    return cargar_experimento(f"max_depth_{criterion}")
+    return cargar_resultados(f"max_depth_{criterion}")
 
 def experimento_max_feature(criterion:str):
     """
