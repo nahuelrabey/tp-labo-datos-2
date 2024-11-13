@@ -74,7 +74,7 @@ plt.ylabel('Dígitos')
 plt.tight_layout()
 plt.show()
 
-plt.savefig('similitud entre digitos.pdf')
+plt.savefig('./imagenes/similitud entre digitos.pdf')
 
 #%%
 promedios_por_digito = []
@@ -97,7 +97,7 @@ for i, promedio in enumerate(promedios_por_digito):
 
 plt.tight_layout()
 plt.show()
-plt.savefig('imagen_promedio.pdf')
+plt.savefig('./imagenes/imagen_promedio.pdf')
 
 #%%
 varianza_por_digito = []
@@ -129,7 +129,7 @@ for i, promedio in enumerate(promedios_por_digito):
 
 plt.tight_layout()
 plt.show()
-plt.savefig('imagen_promedio_filtrada_u25k.pdf')
+plt.savefig('./imagenes/imagen_promedio_filtrada_u25k.pdf')
 
 #%%
 digitos = [0,2,4,6,7]
