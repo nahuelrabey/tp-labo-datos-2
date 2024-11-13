@@ -2,11 +2,12 @@
 
 import helpers as hlps
 import numpy as np
+import pandas as pd
 from sklearn import tree
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 #%%
 FOLDER = "./archivos/"
@@ -97,11 +98,10 @@ def experimento_max_feature(criterion:str):
 
     res,labels = crear_path(f"max_feature_{criterion}")
     np.save(res, resultados)
-    labels = np.char.array([None, "sqrt", "log2"])
-    np.save(labels, max_features)
+    np.save(labels, np.array([str(f) for f in max_features], dtype=str))
 
 def cargar_experimento_max_features(criterion: str):
-    return cargar_experimento(f"max_feature_{criterion}")
+    return cargar_resultados(f"max_feature_{criterion}")
 
 
 #%% Ejecuto experimentos 
@@ -133,7 +133,7 @@ plt.xlabel("Profundidad del árbol de decisión")
 plt.ylabel("Exactitud promedio")
 plt.title("Exactitud vs Profundidad del Árbol de Decisión")
 plt.grid(True)
-plt.show()    
+plt.show()
 
 #%% Experimento Max Features
 print("Creando Gini")
@@ -154,13 +154,34 @@ acc_gini = acc_gini.mean(axis=0)
 acc_entropy = acc_entropy.mean(axis=0)
 acc_log_loss = acc_log_loss.mean(axis=0)
 
+
 #%% Plotear max_features
-plt.bar(labels, acc_gini, marker='o', linestyle='-', label="Gini")
-plt.bar(labels, acc_entropy, marker='o', linestyle='-', label="Entropy")
-plt.bar(labels, acc_log_loss, marker='o', linestyle='-', label="log_loss")
-plt.legend()
-plt.xlabel("Número de características consideradas para el mejor Split")
-plt.ylabel("Exactitud promedio")
-plt.title("Exactitud vs Número de características")
-plt.grid(True)
-plt.show()    
+max_features = []
+value = []
+criterio = []
+
+for i in range(3):
+    value.append(acc_gini[i]) 
+    criterio.append("gini")
+    max_features.append(labels[i])
+
+    value.append(acc_entropy[i]) 
+    criterio.append("entropy")
+    max_features.append(labels[i])
+
+    value.append(acc_log_loss[i]) 
+    criterio.append("log_loss")
+    max_features.append(labels[i])
+
+df = pd.DataFrame(data={"max_features":max_features, "value":value, "criterio":criterio})
+
+g = sns.catplot(
+    data=df, kind="bar",
+    x="max_features", y="value", hue="criterio",
+    errorbar="sd"
+)
+
+g.despine(left=True)
+g.set_axis_labels("max features", "Exactitud")
+g.legend.set_title("")
+plt.show()
