@@ -1,3 +1,4 @@
+from sklearn.ensemble import RandomForestClassifier
 import helpers as hlps
 import numpy as np
 from sklearn import tree
@@ -28,7 +29,7 @@ def crear_path(n: int):
     res = FOLDER + f"exp_{n}_res.npy"    
     labels = FOLDER + f"exp_{n}_label.npy"
     return res, labels
-
+    
 def cargar_experimento(n: int): 
     res, labels = crear_path(n)
     return np.load(res), np.load(labels)
@@ -38,7 +39,6 @@ def experimento_1(X, y):
     nsplits = 5
     kf = KFold(n_splits=nsplits)
     resultados = np.zeros((nsplits, len(alturas)))
-
     split = kf.split(X)
     # print(len(split))
     for i, (train_index, test_index) in enumerate(split):
@@ -47,26 +47,24 @@ def experimento_1(X, y):
         
         kf_y_train = y.iloc[train_index]
         kf_y_test = y.iloc[test_index]
-
+        
         for j, altura_max in enumerate(alturas):
-            arbol = tree.DecisionTreeClassifier(max_depth = altura_max, criterion= criterio) 
+            arbol = tree.DecisionTreeClassifier(max_depth = altura_max,criterion = criterio) 
             arbol.fit(kf_x_train, kf_y_train)
             pred = arbol.predict(kf_x_test)
             exactitud = accuracy_score(kf_y_test, pred)
             resultados[i,j] = exactitud
-
+            
     res,labels = crear_path(1)
     np.save(res, resultados)
     np.save(labels, alturas)
-
-
+    
 if __name__ == "__main__":
     imagenes = hlps.Imagenes()
     mask = imagenes.clases.isin(digitos_especificos)  # Filtramos las imágenes para obtener solo de los dígitos específicos
     x = imagenes.atributos[mask]
     y = imagenes.clases[mask]
-    x_dev, x_eval, y_dev, y_eval = train_test_split(x, y, random_state=1, test_size=0.1)
-
+    x_dev, x_eval, y_dev, y_eval = train_test_split(x,y, random_state=1, test_size=0.1)
     experimento_1(x_dev, y_dev)
     
 #%% Graficamos la precisión promedio en función de la profundidad del árbol

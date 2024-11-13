@@ -1,6 +1,17 @@
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+
+FOLDER = "./archivos/"
+DATAFRAME_DIR = FOLDER + "mnistic_dataframe.pkl"
+
+X_DEV_DIR = FOLDER + "X_DEV.pkl"
+Y_DEV_DIR = FOLDER + "Y_DEV.pkl"
+
+X_HELDOUT_DIR = FOLDER + "X_HELDOUT.pkl"
+Y_HELDOUT_DIR = FOLDER + "Y_HELDOUT.pkl"
 
 #%%    
     

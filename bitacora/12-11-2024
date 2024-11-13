@@ -1,0 +1,8 @@
+Nahuel: 
+
+Bueno, ya están dos modelos con dos experimientos, uno utilizando
+Decisión Tree y otro usando Random Forest.
+
+¿Qué elementos faltan? 
+
+1. [ ] crear un dataframe que sólo contenga los números 0,2,4,6,7

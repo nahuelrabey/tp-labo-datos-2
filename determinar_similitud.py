@@ -131,3 +131,25 @@ plt.tight_layout()
 plt.show()
 plt.savefig('imagen_promedio_filtrada_u25k.pdf')
 
+#%%
+digitos = [0,2,4,6,7]
+varianza_por_digito = []
+atributos_significativos = []
+umbral_varianza = 200 # Valor que se determina manualmente
+
+# Calculamos la varianza para cada dígito
+for i in digitos:
+    varianza_digito = np.var(imgs_list[i], axis=0)
+    
+    # Creamos una máscara de atributos significativos basada en el umbral
+    mask_significativa = varianza_digito > umbral_varianza
+    
+    varianza_por_digito.append(varianza_digito)
+    atributos_significativos.append(mask_significativa)
+
+imgs_filtradas_list = []
+for idx, i in enumerate(digitos):
+    imgs_filtradas = np.where(atributos_significativos[idx], imgs_list[i], np.nan)
+    imgs_filtradas_list.append(imgs_filtradas)
+    
+plt.imshow(imgs_filtradas_list[3][400], cmap='gray')
