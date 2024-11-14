@@ -35,7 +35,39 @@ def cargar_resultados(n: int):
     res, labels = crear_path(n)
     return np.load(res), np.load(labels)
 
-def experimento_max_depth(criterion: str):
+def experimento_max_depth():
+    imagenes = hlps.Imagenes()
+    X = imagenes.x_dev
+    y = imagenes.y_dev
+    
+    alturas = [1,2,3,5,10,20]
+    nsplits = 5
+    kf = KFold(n_splits=nsplits)
+    resultados = np.zeros((nsplits, len(alturas)))
+    split = kf.split(X)
+    # print(len(split))
+    for i, (train_index, test_index) in enumerate(split):
+        kf_x_train = X.iloc[train_index]
+        kf_x_test = X.iloc[test_index]
+        
+        kf_y_train = y.iloc[train_index]
+        kf_y_test = y.iloc[test_index]
+        
+        for j, altura_max in enumerate(alturas):
+            arbol = tree.DecisionTreeClassifier(max_depth = altura_max, criterion='gini') 
+            arbol.fit(kf_x_train, kf_y_train)
+            pred = arbol.predict(kf_x_test)
+            exactitud = accuracy_score(kf_y_test, pred)
+            resultados[i,j] = exactitud
+
+    res,labels = crear_path("max_depth")
+    np.save(res, resultados)
+    np.save(labels, alturas)
+    
+def cargar_experimento_max_depth():
+    return cargar_resultados("max_depth")
+
+def experimento_criterion(criterion: str):
     imagenes = hlps.Imagenes()
     X = imagenes.x_dev
     y = imagenes.y_dev
