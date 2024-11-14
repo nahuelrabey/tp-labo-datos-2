@@ -43,7 +43,7 @@ def experimento_max_depth():
     X = imagenes.x_dev
     y = imagenes.y_dev
     
-    alturas = [1,2,3,5,10,20]
+    alturas = [1,2,3,5,10,15,20]
     nsplits = 5
     kf = KFold(n_splits=nsplits)
     acc = np.zeros((nsplits, len(alturas)))
@@ -84,7 +84,7 @@ def experimento_criterion(criterion: str):
     X = imagenes.x_dev
     y = imagenes.y_dev
     
-    alturas = [1,2,3,5,10,20]
+    alturas = [1,2,3,5,10,15,20]
     nsplits = 5
     kf = KFold(n_splits=nsplits)
     resultados = np.zeros((nsplits, len(alturas)))
@@ -157,12 +157,12 @@ labels, acc= cargar_experimento_max_depth()
 acc = acc.mean(axis=0)
 
 #%% Grafico
-plt.plot(labels, acc, marker='o', linestyle='-', label="Gini")
-plt.legend()
+plt.plot(labels, acc, marker='o', linestyle='-')
 plt.xlabel("Profundidad del árbol de decisión")
 plt.ylabel("Exactitud promedio")
 plt.title("Exactitud vs Profundidad del Árbol de Decisión")
 plt.grid(True)
+plt.tight_layout()
 plt.savefig('./imagenes/exactitud_vs_profundidad.pdf')
 plt.show()
 
@@ -195,8 +195,9 @@ plt.plot(labels, acc_log_loss, marker='o', linestyle='-', label="Log loss")
 plt.legend()
 plt.xlabel("Profundidad del árbol de decisión")
 plt.ylabel("Exactitud promedio")
-plt.title("Exactitud vs Profundidad del Árbol de Decisión")
+plt.title("Exactitud vs Profundidad y Criterio de selección")
 plt.grid(True)
+plt.tight_layout()
 plt.savefig('./imagenes/exactitud_vs_profundidad_vs_criterio.pdf')
 plt.show()
 
@@ -240,14 +241,18 @@ for i in range(3):
 
 df = pd.DataFrame(data={"max_features":max_features, "value":value, "criterio":criterio})
 
+
+# Crear gráfico de barras
 g = sns.catplot(
     data=df, kind="bar",
     x="max_features", y="value", hue="criterio",
-    errorbar="sd"
+    errorbar="sd",
+    height=8, aspect=1.25
 )
 
 g.despine(left=True)
-g.set_axis_labels("max features", "Exactitud")
-g.legend.set_title("")
+g.set_axis_labels("max_features", "Exactitud promedio")
+g.legend.set_title('')
+plt.title("Exactitud vs Características máximas y Criterio de selección")
 plt.savefig('./imagenes/exactitud_vs_max_features_vs_criterio.pdf')
 plt.show()
