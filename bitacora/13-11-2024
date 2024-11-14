@@ -1,0 +1,16 @@
+Ya quiero terminar con esto.
+
+Elemento que sabemos: en promedio, cada número aparece un 20% de las veces, son
+5 números, así que ta todo ok
+
+Voy a agregar la matriz de confusión a cada test (así cómo su gráfico) Igual es
+medio engorroso eso... Quizás no.
+
+Otras dos métricas que puedo agregar, precision and recal:
+
+"Intuitively, precision is the ability of the classifier not to label as
+positive a sample that is negative, and recall is the ability of the classifier
+to find all the positive samples."
+
+Extraído de (https://scikit-learn.org/dev/modules/model_evaluation.html#precision-recall-and-f-measures)
+
