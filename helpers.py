@@ -124,10 +124,10 @@ class Imagenes:
             # Crear Dataframe
             comprobar_dataframe()
     
-            self.df = pd.read_pickle(DATAFRAME_COMPLETO_DIR)
-            self.df_E2 = pd.read_pickle(DATAFRAME_E2_DIR)
-            self.atributos = self.df_E2.drop(["number"], axis=1)
-            self.clases = self.df_E2["number"]
+            self.df: pd.DataFrame = pd.read_pickle(DATAFRAME_COMPLETO_DIR)
+            self.df_E2: pd.DataFrame = pd.read_pickle(DATAFRAME_E2_DIR)
+            self.atributos: pd.DataFrame = self.df_E2.drop(["number"], axis=1)
+            self.clases: pd.Series = self.df_E2["number"]
             self.x_dev = pd.read_pickle(X_DEV_DIR)
             self.y_dev = pd.read_pickle(Y_DEV_DIR)
             self.x_heldout = pd.read_pickle(X_HELDOUT_DIR)
