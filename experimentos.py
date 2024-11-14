@@ -4,7 +4,7 @@ import helpers as hlps
 import numpy as np
 import pandas as pd
 from sklearn import tree
-from sklearn.metrics import accuracy_score
+import sklearn.metrics as metrics
 from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -27,13 +27,16 @@ plt.rcParams['font.family'] = 'STIXGeneral'
 #%%
 
 def crear_path(n: str):
-    res = FOLDER + f"exp_{n}_res.npy"    
     labels = FOLDER + f"exp_{n}_label.npy"
-    return res, labels
+    acc = FOLDER + f"exp_{n}_cc.npy"    
+    # precision = FOLDER + f"exp_{n}_precision.npy"
+    # recall = FOLDER + f"exp_{n}_recall.npy"
+    return labels, acc
     
 def cargar_resultados(n: int): 
-    res, labels = crear_path(n)
-    return np.load(res), np.load(labels)
+    paths = crear_path(n)
+    res = [np.load(p) for p in paths]
+    return res
 
 def experimento_max_depth():
     imagenes = hlps.Imagenes()
@@ -43,7 +46,9 @@ def experimento_max_depth():
     alturas = [1,2,3,5,10,20]
     nsplits = 5
     kf = KFold(n_splits=nsplits)
-    resultados = np.zeros((nsplits, len(alturas)))
+    acc = np.zeros((nsplits, len(alturas)))
+    # precision = np.zeros((nsplits, len(alturas)))
+    # recall = np.zeros((nsplits, len(alturas)))
     split = kf.split(X)
     # print(len(split))
     for i, (train_index, test_index) in enumerate(split):
@@ -57,12 +62,19 @@ def experimento_max_depth():
             arbol = tree.DecisionTreeClassifier(max_depth = altura_max, criterion='gini') 
             arbol.fit(kf_x_train, kf_y_train)
             pred = arbol.predict(kf_x_test)
-            exactitud = accuracy_score(kf_y_test, pred)
-            resultados[i,j] = exactitud
+            a = metrics.accuracy_score(kf_y_test, pred)
+            # p = metrics.precision_score(kf_y_test, pred)
+            # r= metrics.recall_score(kf_y_test, pred)
+            acc[i,j] = a
+            # precision[i,j] = p
+            # recall[i,j] = r
 
-    res,labels = crear_path("max_depth")
-    np.save(res, resultados)
-    np.save(labels, alturas)
+
+    paths = crear_path("max_depth")
+    np.save(paths[0], alturas)
+    np.save(paths[1], acc)
+    # np.save(paths[2], precision)
+    # np.save(paths[3], recall)
     
 def cargar_experimento_max_depth():
     return cargar_resultados("max_depth")
@@ -89,14 +101,14 @@ def experimento_criterion(criterion: str):
             arbol = tree.DecisionTreeClassifier(max_depth = altura_max, criterion=criterion) 
             arbol.fit(kf_x_train, kf_y_train)
             pred = arbol.predict(kf_x_test)
-            exactitud = accuracy_score(kf_y_test, pred)
+            exactitud = metrics.accuracy_score(kf_y_test, pred)
             resultados[i,j] = exactitud
 
-    res,labels = crear_path(f"max_depth_{criterion}")
-    np.save(res, resultados)
-    np.save(labels, alturas)
+    paths = crear_path(f"max_depth_{criterion}")
+    np.save(paths[0], alturas)
+    np.save(paths[1], resultados)
     
-def cargar_experimento_max_depth(criterion:str):
+def cargar_experimento_criterion(criterion:str):
     return cargar_resultados(f"max_depth_{criterion}")
 
 def experimento_max_feature(criterion:str):
@@ -125,46 +137,67 @@ def experimento_max_feature(criterion:str):
             arbol = tree.DecisionTreeClassifier(max_depth = 10, criterion='gini', max_features=feature) 
             arbol.fit(kf_x_train, kf_y_train)
             pred = arbol.predict(kf_x_test)
-            exactitud = accuracy_score(kf_y_test, pred)
+            exactitud = metrics.accuracy_score(kf_y_test, pred)
             resultados[i,j] = exactitud
 
-    res,labels = crear_path(f"max_feature_{criterion}")
-    np.save(res, resultados)
-    np.save(labels, np.array([str(f) for f in max_features], dtype=str))
+    paths = crear_path(f"max_feature_{criterion}")
+    np.save(paths[0], np.array([str(f) for f in max_features], dtype=str))
+    np.save(paths[1], resultados)
 
 def cargar_experimento_max_features(criterion: str):
     return cargar_resultados(f"max_feature_{criterion}")
 
+#%% Cargo experimento max depth
+print("Creando max_depth")
+experimento_max_depth()
+print("listo")
 
-#%% Ejecuto experimentos 
+#%% Cargo experimento
+labels, acc= cargar_experimento_max_depth()
+acc = acc.mean(axis=0)
+
+#%% Grafico
+plt.plot(labels, acc, marker='o', linestyle='-', label="Gini")
+plt.legend()
+plt.xlabel("Profundidad del árbol de decisión")
+plt.ylabel("Exactitud promedio")
+plt.title("Exactitud vs Profundidad del Árbol de Decisión")
+plt.grid(True)
+plt.savefig('./imagenes/exactitud_vs_profundidad.pdf')
+plt.show()
+
+#%% Experimento Criterio
 print("Creando Gini")
-experimento_max_depth("gini")
+experimento_criterion("gini")
 print("Creando Entropy")
-experimento_max_depth("entropy")
+experimento_criterion("entropy")
 print("Creando Log Loss")
-experimento_max_depth("log_loss")
+experimento_criterion("log_loss")
 print("Listo")
+
 #%% Cargo experimentos
-acc_gini, labels = cargar_experimento_max_depth("gini")
-acc_entropy, _ = cargar_experimento_max_depth("entropy")
-acc_log_loss, _ = cargar_experimento_max_depth("log_loss")
+labels, acc_gini = cargar_experimento_criterion("gini")
+_, acc_entropy = cargar_experimento_criterion("entropy")
+_, acc_log_loss = cargar_experimento_criterion("log_loss")
 
 print(acc_gini.shape)
 
 acc_gini = acc_gini.mean(axis=0)
 acc_entropy = acc_entropy.mean(axis=0)
 acc_log_loss = acc_log_loss.mean(axis=0)
+
 #%% Graficamos la precisión promedio en función de la profundidad del árbol
 
 
 plt.plot(labels, acc_gini, marker='o', linestyle='-', label="Gini")
 plt.plot(labels, acc_entropy, marker='o', linestyle='-', label="Entropy")
-plt.plot(labels, acc_log_loss, marker='o', linestyle='-', label="log_loss")
+plt.plot(labels, acc_log_loss, marker='o', linestyle='-', label="Log loss")
 plt.legend()
 plt.xlabel("Profundidad del árbol de decisión")
 plt.ylabel("Exactitud promedio")
 plt.title("Exactitud vs Profundidad del Árbol de Decisión")
 plt.grid(True)
+plt.savefig('./imagenes/exactitud_vs_profundidad_vs_criterio.pdf')
 plt.show()
 
 #%% Experimento Max Features
@@ -177,9 +210,9 @@ experimento_max_feature("log_loss")
 print("Listo")
 
 #%% Experimento  max_features
-acc_gini, labels = cargar_experimento_max_features("gini")
-acc_entropy, _ = cargar_experimento_max_features("entropy")
-acc_log_loss, _ = cargar_experimento_max_features("log_loss")
+labels, acc_gini= cargar_experimento_max_features("gini")
+_, acc_entropy = cargar_experimento_max_features("entropy")
+_, acc_log_loss = cargar_experimento_max_features("log_loss")
 
 
 acc_gini = acc_gini.mean(axis=0)
@@ -216,4 +249,5 @@ g = sns.catplot(
 g.despine(left=True)
 g.set_axis_labels("max features", "Exactitud")
 g.legend.set_title("")
+plt.savefig('./imagenes/exactitud_vs_max_features_vs_criterio.pdf')
 plt.show()
