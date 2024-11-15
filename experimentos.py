@@ -1,13 +1,16 @@
 # %% Imports
 
+import os
 import helpers as hlps
 import numpy as np
 import pandas as pd
-from sklearn import tree
 import sklearn.metrics as metrics
+from sklearn import tree
 from sklearn.model_selection import KFold
+from sklearn.preprocessing import LabelBinarizer
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pickle
 
 #%%
 FOLDER = "./archivos/"
@@ -147,6 +150,27 @@ def experimento_max_feature(criterion:str):
 def cargar_experimento_max_features(criterion: str):
     return cargar_resultados(f"max_feature_{criterion}")
 
+MODELO_DIR = FOLDER + "arbol.pkl"
+def crear_modelo():
+    img = hlps.Imagenes()
+    X = img.x_dev
+    y = img.y_dev
+
+    arbol = tree.DecisionTreeClassifier(max_depth=10, criterion="gini", max_features=None)
+    arbol.fit(X,y)
+    
+    with open(MODELO_DIR, 'wb') as file:
+        pickle.dump(arbol, file)
+
+def cargar_modelo():
+    if not os.path.exists(MODELO_DIR):
+        crear_modelo()
+    
+    arbol: tree.DecisionTreeClassifier = None
+    with open(MODELO_DIR, 'rb') as file:
+        arbol = pickle.load(file)
+    return arbol
+
 #%% Cargo experimento max depth
 print("Creando max_depth")
 experimento_max_depth()
@@ -238,10 +262,10 @@ for i in range(3):
     criterio.append("log_loss")
     max_features.append(labels[i])
 
-df = pd.DataFrame(data={"max_features":max_features, "value":value, "criterio":criterio})
+scores_df = pd.DataFrame(data={"max_features":max_features, "value":value, "criterio":criterio})
 
 g = sns.catplot(
-    data=df, kind="bar",
+    data=scores_df, kind="bar",
     x="max_features", y="value", hue="criterio",
     errorbar="sd"
 )
@@ -250,4 +274,90 @@ g.despine(left=True)
 g.set_axis_labels("max features", "Exactitud")
 g.legend.set_title("")
 plt.savefig('./imagenes/exactitud_vs_max_features_vs_criterio.pdf')
+plt.show()
+
+#%% Cargamos el modelo
+img = hlps.Imagenes()
+arbol = cargar_modelo()
+predict = arbol.predict(img.x_heldout)
+
+# Utilizamos para métricas con un estilo OvR
+label_binarizer = LabelBinarizer()
+label_binarizer.fit(img.y_dev)
+
+# mps dice realmente en qué clase está
+y_digit_heldout = label_binarizer.transform(img.y_heldout)
+
+# nos da la probabilidad de que entre en tal clase
+predict_proba = arbol.predict_proba(img.x_heldout)
+
+#%% Calculamos puntajes
+# TODO: Hacer un gráfico de esto
+exactitud = metrics.accuracy_score(img.y_heldout, predict)
+# Podemos utilizar 'macro' pues cada clase tiene, en promedio, una aparición del
+# 20%, y al ser 5 clase, está todo bien balanceado para llegar al 100% de la
+# muestra
+precision = metrics.precision_score(img.y_heldout, predict, average="macro")
+recall = metrics.recall_score(img.y_heldout, predict, average="macro")
+
+roc_auc = np.zeros(5)
+for i in range(5):
+    res = metrics.roc_auc_score(
+        y_true = y_digit_heldout[:,i], 
+        y_score = predict_proba[:,i], 
+        average="macro", 
+        multi_class="ovr", 
+        labels=hlps.NUMEROS_GRUPO_14
+    )
+    roc_auc[i] = res
+
+roc_auc_mean = roc_auc.mean()
+
+
+#%% Plot scores
+values = [exactitud, precision, recall, roc_auc_mean]
+score = ["exactitud","precisión", "recall", "AUC-ROC"]
+scores_df = pd.DataFrame({"values": values, "score":score})
+sns.barplot(data=scores_df, x="score",y="values")
+plt.show()
+
+#%% Curvas ROC
+# Para calcular una curva ROC para cada clase. Cómo el método está pensado en
+# términos binarios, no para una multiclase, hay que hacer una transformación.
+# Para esto, se considera la estrategia One-vs-All. Es decir, "true positive"
+# son los que entren en la clase setudiada, "false positive" todos los demás, lo
+# mismo para "true negative" y "false negative"
+
+# metrics.roc_curve(img.y_heldout, predict_proba)
+label_binarizer = LabelBinarizer()
+label_binarizer.fit(img.y_dev)
+
+axs = []
+figs = []
+for digit in hlps.NUMEROS_GRUPO_14:
+    vs_digtos = np.setdiff1d(hlps.NUMEROS_GRUPO_14, [digit])
+    print(vs_digtos)
+    digito_id = np.flatnonzero(label_binarizer.classes_ == digit)[0]
+    display = metrics.RocCurveDisplay.from_predictions(
+        y_true = y_digit_heldout[:, digito_id], 
+        y_pred = predict_proba[:, digito_id],
+        name=f"{digit} vs el resto de dígitos",
+        color="darkorange",
+        plot_chance_level=True,
+    )
+    _ = display.ax_.set(
+        xlabel="False Positive Rate",
+        ylabel="True Positive Rate",
+        title=f"One-vs-Rest ROC curves:\n{digit} vs {vs_digtos}",
+    )
+    axs.append(display.ax_)
+    plt.savefig(f"./imagenes/roc_curve_{digit}.pdf")
+    plt.show()
+
+# metrics.roc_auc_score
+
+#%% Matriz de confusión
+matriz = metrics.confusion_matrix(img.y_heldout, predict)
+sns.heatmap(matriz, annot=False, cmap="YlGnBu", cbar=True)
+plt.savefig('./imagenes/matriz_confusion_modelo.pdf')
 plt.show()

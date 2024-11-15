@@ -1,0 +1,9 @@
+- [ ] Armar el modelo final
+- [ ] Analizar las métricas del modelo final
+- [ ] Probar el modelo final, mostrando algunas imágenes random
+- [ ] Fin
+
+Datos útiles
+
+ROC y AUC utilizando One vs Rest, para multiclase
+https://scikit-learn.org/1.5/modules/model_evaluation.html#one-vs-rest-algorithm
