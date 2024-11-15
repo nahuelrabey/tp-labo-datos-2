@@ -324,6 +324,7 @@ values = [exactitud, precision, recall, roc_auc_mean]
 score = ["exactitud","precisión", "recall", "AUC-ROC"]
 scores_df = pd.DataFrame({"values": values, "score":score})
 sns.barplot(data=scores_df, x="score",y="values")
+plt.savefig("./imagenes/puntajes_modelo.pdf")
 plt.show()
 
 #%% Curvas ROC
