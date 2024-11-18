@@ -171,16 +171,16 @@ def cargar_modelo():
         arbol = pickle.load(file)
     return arbol
 
-#%% Cargo experimento max depth
+#%% Cargamos experimento max depth
 print("Creando max_depth")
 experimento_max_depth()
 print("listo")
 
-#%% Cargo experimento
+#%% Cargamos experimento
 labels, acc= cargar_experimento_max_depth()
 acc = acc.mean(axis=0)
-
-#%% Grafico
+ 
+#%% Graficamos la precisión promedio en función de la profundidad del árbol
 plt.plot(labels, acc, marker='o', linestyle='-')
 plt.xlabel("Profundidad del árbol de decisión")
 plt.ylabel("Exactitud promedio")
@@ -199,7 +199,7 @@ print("Creando Log Loss")
 experimento_criterion("log_loss")
 print("Listo")
 
-#%% Cargo experimentos
+#%% Cargamos experimentos
 labels, acc_gini = cargar_experimento_criterion("gini")
 _, acc_entropy = cargar_experimento_criterion("entropy")
 _, acc_log_loss = cargar_experimento_criterion("log_loss")
@@ -210,8 +210,7 @@ acc_gini = acc_gini.mean(axis=0)
 acc_entropy = acc_entropy.mean(axis=0)
 acc_log_loss = acc_log_loss.mean(axis=0)
 
-#%% Graficamos la precisión promedio en función de la profundidad del árbol
-
+#%% Graficamos la precisión promedio en función de la profundidad del árbol y criterio de selección
 
 plt.plot(labels, acc_gini, marker='o', linestyle='-', label="Gini")
 plt.plot(labels, acc_entropy, marker='o', linestyle='-', label="Entropy")
@@ -234,7 +233,7 @@ print("Creando Log Loss")
 experimento_max_feature("log_loss")
 print("Listo")
 
-#%% Experimento  max_features
+#%% Experimento max_features
 labels, acc_gini= cargar_experimento_max_features("gini")
 _, acc_entropy = cargar_experimento_max_features("entropy")
 _, acc_log_loss = cargar_experimento_max_features("log_loss")
@@ -265,7 +264,6 @@ for i in range(3):
 
 scores_df = pd.DataFrame(data={"max_features":max_features, "value":value, "criterio":criterio})
 
-
 # Crear gráfico de barras
 g = sns.catplot(
     data=scores_df, kind="bar",
@@ -281,7 +279,7 @@ plt.title("Exactitud vs Características máximas y Criterio de selección")
 plt.savefig('./imagenes/exactitud_vs_max_features_vs_criterio.pdf')
 plt.show()
 
-#%% Cargamos el modelo
+#%% Cargamos el modelo definitivo
 img = hlps.Imagenes()
 arbol = cargar_modelo()
 predict = arbol.predict(img.x_heldout)
@@ -330,7 +328,7 @@ plt.show()
 # Para calcular una curva ROC para cada clase. Cómo el método está pensado en
 # términos binarios, no para una multiclase, hay que hacer una transformación.
 # Para esto, se considera la estrategia One-vs-All. Es decir, "true positive"
-# son los que entren en la clase setudiada, "false positive" todos los demás, lo
+# son los que entren en la clase estudiada, "false positive" todos los demás, lo
 # mismo para "true negative" y "false negative"
 
 # metrics.roc_curve(img.y_heldout, predict_proba)
@@ -360,6 +358,35 @@ for digit in hlps.NUMEROS_GRUPO_14:
     plt.show()
 
 # metrics.roc_auc_score
+
+#%% ROC en un solo gráfico
+label_binarizer = LabelBinarizer()
+y_binarized = label_binarizer.fit_transform(img.y_heldout)
+
+for digit in hlps.NUMEROS_GRUPO_14:
+    vs_digtos = np.setdiff1d(hlps.NUMEROS_GRUPO_14, [digit])
+    print(f"Digit: {digit}, vs Digits: {vs_digtos}")
+
+    digito_id = np.flatnonzero(label_binarizer.classes_ == digit)[0]
+    
+    y_true = y_binarized[:, digito_id]
+    y_score = predict_proba[:, digito_id]
+    
+    fpr, tpr, _ = metrics.roc_curve(y_true, y_score)
+    roc_auc = metrics.auc(fpr, tpr)
+    
+    plt.plot(fpr, tpr, label=f"{digit} vs resto (AUC = {roc_auc:.2f})")
+
+# Plot chance level
+plt.plot([0, 1], [0, 1], 'k--', label="Nivel de azar", lw=1.5)
+
+# Add labels, title, and legend
+plt.xlabel("Tasa Falsos Positivos") 
+plt.ylabel("Tasa Verdaderos Positivos") 
+plt.title("Curvas ROC Dígito vs demás")
+plt.legend(loc="lower right")
+plt.grid(alpha=0.3)
+plt.tight_layout()
 
 #%% Matriz de confusión
 matriz = metrics.confusion_matrix(img.y_heldout, predict)
